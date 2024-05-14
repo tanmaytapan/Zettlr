@@ -35,20 +35,25 @@ const ipcRenderer = window.ipc
  *
  * @return  {string}              The URL string, or undefined
  */
-function getURLForNode (node: SyntaxNode, state: EditorState): string|undefined {
-  if (node.type.name === 'URL') {
-    return state.sliceDoc(node.from, node.to)
-  }
+function getURLForNode(node: SyntaxNode, state: EditorState): string | undefined {
+    // Check if the node itself is of type 'URL'
+    if (node.type.name === 'URL') {
+        return state.sliceDoc(node.from, node.to);
+    }
 
-  const child = node.getChild('URL')
+    // If the node has children, recursively search for a node of type 'URL'
+    if (node.firstChild !== null) {
+        for (let child of node.children) {
+            const url = getURLForNode(child, state);
+            if (url !== undefined) {
+                return url;
+            }
+        }
+    }
 
-  if (child === null) {
-    return undefined
-  } else {
-    return state.sliceDoc(child.from, child.to)
-  }
+    // If no 'URL' node is found in the children, return undefined
+    return undefined;
 }
-
 /**
  * Shows a context menu appropriate for a link or image using the given node
  *
